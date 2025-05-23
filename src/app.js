@@ -1,20 +1,31 @@
 const express = require("express");
 const app = express();
+const connectDB = require("./config/database");
+const User = require("./models/user");
 
 const PORT = process.env.PORT || 5555;
 
-app.use("/", (req, res) => {
-  res.send("This the response from Homepage");
+app.use(express.json());
+
+app.post("/signup", async (req, res) => {
+  const user = new User(req.body);
+  try {
+    await user.save();
+    res.status(200).json({
+      message: "User Created",
+    });
+  } catch (err) {
+    res.status(400).send("Error in creating user" + err.message);
+  }
 });
 
-app.use("/login", (req, res) => {
-  res.send("This is the response from login");
-});
-
-app.use("/test", (req, res) => {
-  res.send("Hello, World! My first server is responding!");
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+connectDB().then(() => {
+  try {
+    console.log("DB Connection Successful");
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.log("DB connection Failed");
+  }
 });
